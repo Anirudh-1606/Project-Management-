@@ -15,7 +15,13 @@ import {
   Skeleton,
   Fade,
   Typography,
+  Popover,
+  Stack,
+  InputAdornment,
+  Paper,
+  LinearProgress,
 } from "@mui/material";
+import Grid from "@mui/material/Unstable_Grid2";
 import SettingsIcon from "@mui/icons-material/Settings";
 import GroupIcon from "@mui/icons-material/Group";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -28,6 +34,9 @@ import TaskDetails from "./TaskDetails";
 import BoardConfig from "./BoardConfig";
 import UserManagement from "./UserManagement";
 import EmptyState from "./EmptyState";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import SearchIcon from "@mui/icons-material/Search";
+import BarChartIcon from "@mui/icons-material/BarChart";
 
 const defaultColumns: ColumnType[] = [
   {
@@ -70,6 +79,15 @@ const Board: React.FC = () => {
     estimatedTime: "",
     tags: "",
   });
+  const [selectedPriority, setSelectedPriority] = useState<TaskPriority | "">(
+    ""
+  );
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [filterAnchorEl, setFilterAnchorEl] =
+    useState<HTMLButtonElement | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statsOpen, setStatsOpen] = useState(false);
 
   useEffect(() => {
     // Simulate loading data
@@ -126,6 +144,8 @@ const Board: React.FC = () => {
         .map((tag) => tag.trim())
         .filter(Boolean),
       attachments: [],
+      dependencies: [],
+      comments: [],
     };
 
     // Add new assignee to the list if it's not already there
@@ -174,6 +194,18 @@ const Board: React.FC = () => {
       ...removed,
       status: destination.droppableId as TaskStatus,
     };
+
+    // Check dependencies before allowing move
+    if (destination.droppableId === "DONE") {
+      const blockingTasks = sourceTasks.filter((task) =>
+        task.dependencies.includes(removed.id)
+      );
+      if (blockingTasks.length > 0) {
+        toast.error("Cannot move task to Done: has blocking dependencies");
+        return;
+      }
+    }
+
     destTasks.splice(destination.index, 0, updatedTask);
 
     setColumns(
@@ -210,10 +242,359 @@ const Board: React.FC = () => {
 
   const filteredColumns = columns.map((column) => ({
     ...column,
-    tasks: selectedAssignee
-      ? column.tasks.filter((task) => task.assignee === selectedAssignee)
-      : column.tasks,
+    tasks: column.tasks.filter((task) => {
+      const matchesAssignee =
+        !selectedAssignee || task.assignee === selectedAssignee;
+      const matchesPriority =
+        !selectedPriority || task.priority === selectedPriority;
+      const matchesDateRange =
+        (!startDate || task.dueDate >= startDate) &&
+        (!endDate || task.dueDate <= endDate);
+      const matchesSearch =
+        !searchQuery ||
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return (
+        matchesAssignee && matchesPriority && matchesDateRange && matchesSearch
+      );
+    }),
   }));
+
+  const getAllTasks = () => {
+    return columns.reduce((acc, col) => [...acc, ...col.tasks], [] as Task[]);
+  };
+
+  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setFilterAnchorEl(event.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setFilterAnchorEl(null);
+  };
+
+  const clearFilters = () => {
+    setSelectedPriority("");
+    setStartDate(null);
+    setEndDate(null);
+    setSelectedAssignee("");
+    handleFilterClose();
+  };
+
+  const getTaskStats = () => {
+    const allTasks = getAllTasks();
+    const totalTasks = allTasks.length;
+    const completedTasks = allTasks.filter(
+      (task) => task.status === "DONE"
+    ).length;
+    const inProgressTasks = allTasks.filter(
+      (task) => task.status === "IN_PROGRESS"
+    ).length;
+    const blockedTasks = allTasks.filter(
+      (task) => task.status === "BLOCKED"
+    ).length;
+    const todoTasks = allTasks.filter((task) => task.status === "TODO").length;
+
+    const priorityDistribution = {
+      HIGH: allTasks.filter((task) => task.priority === "HIGH").length,
+      MEDIUM: allTasks.filter((task) => task.priority === "MEDIUM").length,
+      LOW: allTasks.filter((task) => task.priority === "LOW").length,
+    };
+
+    const completionRate =
+      totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+
+    return {
+      totalTasks,
+      completedTasks,
+      inProgressTasks,
+      blockedTasks,
+      todoTasks,
+      priorityDistribution,
+      completionRate,
+    };
+  };
+
+  const renderStats = () => {
+    const stats = getTaskStats();
+
+    return (
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          mb: 3,
+          bgcolor: "background.default",
+          borderRadius: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+          <BarChartIcon sx={{ mr: 1, color: "primary.main" }} />
+          <Typography
+            variant="subtitle2"
+            sx={{
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 600,
+              color: "text.primary",
+              fontSize: "0.875rem",
+            }}
+          >
+            Task Statistics
+          </Typography>
+        </Box>
+        <Grid container spacing={2}>
+          <Grid xs={12}>
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontFamily: "'Poppins', sans-serif",
+                  color: "text.secondary",
+                  display: "block",
+                  mb: 1,
+                }}
+              >
+                Overall Progress
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={stats.completionRate}
+                sx={{
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: "rgba(33, 150, 243, 0.1)",
+                  "& .MuiLinearProgress-bar": {
+                    backgroundColor: "#2196f3",
+                  },
+                }}
+              />
+              <Typography
+                variant="caption"
+                sx={{
+                  fontFamily: "'Poppins', sans-serif",
+                  color: "text.secondary",
+                  display: "block",
+                  mt: 1,
+                }}
+              >
+                {stats.completedTasks} of {stats.totalTasks} tasks completed
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontFamily: "'Poppins', sans-serif",
+                color: "text.secondary",
+                display: "block",
+                mb: 1,
+              }}
+            >
+              Task Distribution
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    color: "text.secondary",
+                    display: "block",
+                    mb: 0.5,
+                  }}
+                >
+                  To Do ({stats.todoTasks})
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={(stats.todoTasks / stats.totalTasks) * 100}
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(33, 150, 243, 0.1)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#2196f3",
+                    },
+                  }}
+                />
+              </Box>
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    color: "text.secondary",
+                    display: "block",
+                    mb: 0.5,
+                  }}
+                >
+                  In Progress ({stats.inProgressTasks})
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={(stats.inProgressTasks / stats.totalTasks) * 100}
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(255, 167, 38, 0.1)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#ff9800",
+                    },
+                  }}
+                />
+              </Box>
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    color: "text.secondary",
+                    display: "block",
+                    mb: 0.5,
+                  }}
+                >
+                  Blocked ({stats.blockedTasks})
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={(stats.blockedTasks / stats.totalTasks) * 100}
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(244, 67, 54, 0.1)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#f44336",
+                    },
+                  }}
+                />
+              </Box>
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    color: "text.secondary",
+                    display: "block",
+                    mb: 0.5,
+                  }}
+                >
+                  Done ({stats.completedTasks})
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={(stats.completedTasks / stats.totalTasks) * 100}
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(76, 175, 80, 0.1)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#4caf50",
+                    },
+                  }}
+                />
+              </Box>
+            </Box>
+          </Grid>
+          <Grid xs={12} sm={6}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontFamily: "'Poppins', sans-serif",
+                color: "text.secondary",
+                display: "block",
+                mb: 1,
+              }}
+            >
+              Priority Distribution
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    color: "text.secondary",
+                    display: "block",
+                    mb: 0.5,
+                  }}
+                >
+                  High ({stats.priorityDistribution.HIGH})
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={
+                    (stats.priorityDistribution.HIGH / stats.totalTasks) * 100
+                  }
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(244, 67, 54, 0.1)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#f44336",
+                    },
+                  }}
+                />
+              </Box>
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    color: "text.secondary",
+                    display: "block",
+                    mb: 0.5,
+                  }}
+                >
+                  Medium ({stats.priorityDistribution.MEDIUM})
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={
+                    (stats.priorityDistribution.MEDIUM / stats.totalTasks) * 100
+                  }
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(255, 167, 38, 0.1)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#ff9800",
+                    },
+                  }}
+                />
+              </Box>
+              <Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    color: "text.secondary",
+                    display: "block",
+                    mb: 0.5,
+                  }}
+                >
+                  Low ({stats.priorityDistribution.LOW})
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={
+                    (stats.priorityDistribution.LOW / stats.totalTasks) * 100
+                  }
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: "rgba(76, 175, 80, 0.1)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#4caf50",
+                    },
+                  }}
+                />
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+    );
+  };
 
   const renderBoardContent = () => {
     const hasTasks = columns.some((column) => column.tasks.length > 0);
@@ -261,27 +642,56 @@ const Board: React.FC = () => {
               </Box>
             </Box>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-              <FormControl sx={{ minWidth: 200 }}>
-                <InputLabel sx={{ fontFamily: "'Roboto', sans-serif" }}>
-                  Filter by Assignee
-                </InputLabel>
-                <Select
-                  value={selectedAssignee}
-                  label="Filter by Assignee"
-                  onChange={(e) => setSelectedAssignee(e.target.value)}
+              <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                <TextField
+                  placeholder="Search tasks..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{
-                    height: 40,
-                    fontFamily: "'Roboto', sans-serif",
+                    width: 300,
+                    "& .MuiInputLabel-root": {
+                      fontFamily: "'Poppins', sans-serif",
+                    },
+                    "& .MuiInputBase-root": {
+                      fontFamily: "'Poppins', sans-serif",
+                    },
                   }}
-                >
-                  <MenuItem value="">All</MenuItem>
-                  {assignees.map((assignee) => (
-                    <MenuItem key={assignee} value={assignee}>
-                      {assignee}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel sx={{ fontFamily: "'Roboto', sans-serif" }}>
+                    Filter by Assignee
+                  </InputLabel>
+                  <Select
+                    value={selectedAssignee}
+                    label="Filter by Assignee"
+                    onChange={(e) => setSelectedAssignee(e.target.value)}
+                    sx={{
+                      height: 40,
+                      fontFamily: "'Roboto', sans-serif",
+                    }}
+                  >
+                    <MenuItem value="">All</MenuItem>
+                    {assignees.map((assignee) => (
+                      <MenuItem key={assignee} value={assignee}>
+                        {assignee}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <IconButton onClick={handleFilterClick}>
+                <FilterListIcon />
+              </IconButton>
+              <IconButton onClick={() => setStatsOpen(true)}>
+                <BarChartIcon />
+              </IconButton>
               <IconButton onClick={() => setUserManagementOpen(true)}>
                 <GroupIcon />
               </IconButton>
@@ -312,7 +722,15 @@ const Board: React.FC = () => {
             <EmptyState type="tasks" onAction={() => setOpen(true)} />
           ) : (
             <DragDropContext onDragEnd={handleDragEnd}>
-              <Box sx={{ display: "flex", gap: 2, overflowX: "auto", pb: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  overflowX: "auto",
+                  pb: 2,
+                  minHeight: "calc(100vh - 200px)",
+                }}
+              >
                 {filteredColumns.map((column) => (
                   <Column
                     key={column.id}
@@ -362,6 +780,7 @@ const Board: React.FC = () => {
         task={selectedTask}
         onClose={() => setSelectedTask(null)}
         onUpdateTask={handleUpdateTask}
+        allTasks={getAllTasks()}
       />
 
       <BoardConfig
@@ -377,6 +796,50 @@ const Board: React.FC = () => {
         assignees={assignees}
         onUpdateAssignees={setAssignees}
       />
+
+      <Dialog
+        open={statsOpen}
+        onClose={() => setStatsOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            boxShadow: 3,
+            maxHeight: "90vh",
+            overflow: "auto",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 600,
+            letterSpacing: "-0.5px",
+            fontSize: "1.25rem",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <BarChartIcon sx={{ color: "primary.main" }} />
+          Task Statistics
+        </DialogTitle>
+        <DialogContent>{renderStats()}</DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setStatsOpen(false)}
+            sx={{
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 500,
+              textTransform: "none",
+              fontSize: "0.875rem",
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={open}

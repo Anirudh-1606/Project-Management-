@@ -39,7 +39,7 @@ const Column: React.FC<ColumnProps> = ({ column, onTaskClick }) => {
             sx={{ minWidth: 30 }}
           />
         </Box>
-        <Droppable droppableId={column.id}>
+        <Droppable droppableId={column.id} type="TASK">
           {(provided, snapshot) => (
             <Box
               ref={provided.innerRef}
@@ -55,9 +55,12 @@ const Column: React.FC<ColumnProps> = ({ column, onTaskClick }) => {
               }}
             >
               {column.tasks.map((task, index) => (
-                <div key={task.id} onClick={() => onTaskClick(task)}>
-                  <TaskCard task={task} index={index} />
-                </div>
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  index={index}
+                  onClick={onTaskClick}
+                />
               ))}
               {provided.placeholder}
             </Box>

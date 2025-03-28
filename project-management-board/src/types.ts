@@ -1,13 +1,20 @@
+export type TaskStatus = "TODO" | "IN_PROGRESS" | "BLOCKED" | "DONE";
 export type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
 
-export type TaskStatus = string; // Allow any string for custom stages
+export interface Comment {
+  id: string;
+  content: string;
+  author: string;
+  createdAt: Date;
+  attachments: string[];
+}
 
 export interface WorkLog {
   id: string;
-  taskId: string;
-  userId: string;
-  timestamp: Date;
-  timeSpent: number;
+  startTime: Date;
+  endTime: Date;
+  duration: number; // in minutes
+  timeSpent: number; // in minutes
   description: string;
 }
 
@@ -21,14 +28,16 @@ export interface Task {
   dueDate: Date;
   createdAt: Date;
   workLogs: WorkLog[];
-  estimatedTime: number;
-  actualTime: number;
+  estimatedTime: number; // in minutes
+  actualTime: number; // in minutes
   tags: string[];
   attachments: string[];
+  dependencies: string[]; // Array of task IDs this task depends on
+  comments: Comment[];
 }
 
 export interface Column {
-  id: TaskStatus;
+  id: string;
   title: string;
   tasks: Task[];
 }

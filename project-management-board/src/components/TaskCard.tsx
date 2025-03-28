@@ -17,6 +17,7 @@ import { formatTime } from "../utils/time";
 interface TaskCardProps {
   task: Task;
   index: number;
+  onClick?: (task: Task) => void;
 }
 
 const priorityColors = {
@@ -25,7 +26,7 @@ const priorityColors = {
   HIGH: "error",
 } as const;
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, index, onClick }) => {
   const progress = (task.actualTime / task.estimatedTime) * 100;
   const isOverdue = task.dueDate < new Date() && task.status !== "DONE";
 
@@ -37,6 +38,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
+            onClick={() => onClick?.(task)}
             sx={{
               mb: 2,
               cursor: "grab",
