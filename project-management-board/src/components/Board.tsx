@@ -18,8 +18,10 @@ import {
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import GroupIcon from "@mui/icons-material/Group";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { v4 as uuidv4 } from "uuid";
+import { toast } from "react-toastify";
 import { Column as ColumnType, Task, TaskStatus, TaskPriority } from "../types";
 import Column from "./Column";
 import TaskDetails from "./TaskDetails";
@@ -77,6 +79,83 @@ const Board: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const validateTaskForm = () => {
+    if (!newTask.title.trim()) {
+      toast.error("Please enter a task title");
+      return false;
+    }
+    if (!newTask.description.trim()) {
+      toast.error("Please enter a task description");
+      return false;
+    }
+    if (!newTask.assignee) {
+      toast.error("Please select an assignee");
+      return false;
+    }
+    if (!newTask.dueDate) {
+      toast.error("Please select a due date");
+      return false;
+    }
+    if (!newTask.estimatedTime || parseFloat(newTask.estimatedTime) <= 0) {
+      toast.error("Please enter a valid estimated time");
+      return false;
+    }
+    return true;
+  };
+
+  const handleAddTask = () => {
+    if (!validateTaskForm()) return;
+
+    // Convert hours to minutes (1 hour = 60 minutes)
+    const estimatedMinutes = parseFloat(newTask.estimatedTime) * 60;
+
+    const task: Task = {
+      id: uuidv4(),
+      title: newTask.title.trim(),
+      description: newTask.description.trim(),
+      status: "TODO",
+      priority: newTask.priority,
+      assignee: newTask.assignee,
+      dueDate: new Date(newTask.dueDate),
+      createdAt: new Date(),
+      workLogs: [],
+      estimatedTime: estimatedMinutes,
+      actualTime: 0,
+      tags: newTask.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+      attachments: [],
+    };
+
+    // Add new assignee to the list if it's not already there
+    if (newTask.assignee && !assignees.includes(newTask.assignee)) {
+      setAssignees([...assignees, newTask.assignee]);
+      toast.success(`Added ${newTask.assignee} to team members`);
+    }
+
+    setColumns(
+      columns.map((col) => {
+        if (col.id === "TODO") {
+          return { ...col, tasks: [...col.tasks, task] };
+        }
+        return col;
+      })
+    );
+
+    toast.success("Task added successfully");
+    setNewTask({
+      title: "",
+      description: "",
+      priority: "MEDIUM",
+      assignee: "",
+      dueDate: "",
+      estimatedTime: "",
+      tags: "",
+    });
+    setOpen(false);
+  };
+
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
@@ -108,52 +187,8 @@ const Board: React.FC = () => {
         return col;
       })
     );
-  };
 
-  const handleAddTask = () => {
-    // Convert hours to minutes (1 hour = 60 minutes)
-    const estimatedMinutes = parseFloat(newTask.estimatedTime) * 60;
-
-    const task: Task = {
-      id: uuidv4(),
-      title: newTask.title,
-      description: newTask.description,
-      status: "TODO",
-      priority: newTask.priority,
-      assignee: newTask.assignee,
-      dueDate: new Date(newTask.dueDate),
-      createdAt: new Date(),
-      workLogs: [],
-      estimatedTime: estimatedMinutes,
-      actualTime: 0,
-      tags: newTask.tags.split(",").map((tag) => tag.trim()),
-      attachments: [],
-    };
-
-    // Add new assignee to the list if it's not already there
-    if (newTask.assignee && !assignees.includes(newTask.assignee)) {
-      setAssignees([...assignees, newTask.assignee]);
-    }
-
-    setColumns(
-      columns.map((col) => {
-        if (col.id === "TODO") {
-          return { ...col, tasks: [...col.tasks, task] };
-        }
-        return col;
-      })
-    );
-
-    setNewTask({
-      title: "",
-      description: "",
-      priority: "MEDIUM",
-      assignee: "",
-      dueDate: "",
-      estimatedTime: "",
-      tags: "",
-    });
-    setOpen(false);
+    toast.success(`Task moved to ${destColumn.title}`);
   };
 
   const handleUpdateTask = (updatedTask: Task) => {
@@ -165,10 +200,12 @@ const Board: React.FC = () => {
         ),
       }))
     );
+    toast.success("Task updated successfully");
   };
 
   const handleUpdateColumns = (updatedColumns: ColumnType[]) => {
     setColumns(updatedColumns);
+    toast.success("Board configuration updated");
   };
 
   const filteredColumns = columns.map((column) => ({
@@ -186,16 +223,43 @@ const Board: React.FC = () => {
       <Fade in={!loading} timeout={500}>
         <Box>
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-            <Typography
-              variant="h4"
-              sx={{
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 700,
-                letterSpacing: "-1px",
-              }}
-            >
-              Project Management Board
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <DashboardIcon
+                sx={{
+                  fontSize: 32,
+                  color: "primary.main",
+                  opacity: 0.9,
+                }}
+              />
+              <Box>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: 600,
+                    letterSpacing: "-0.5px",
+                    background:
+                      "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                  }}
+                >
+                  TaskFlow
+                </Typography>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    color: "text.secondary",
+                    fontWeight: 500,
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  Streamline Your Work
+                </Typography>
+              </Box>
+            </Box>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
               <FormControl sx={{ minWidth: 200 }}>
                 <InputLabel sx={{ fontFamily: "'Roboto', sans-serif" }}>
@@ -319,9 +383,20 @@ const Board: React.FC = () => {
         onClose={() => setOpen(false)}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            boxShadow: 3,
+          },
+        }}
       >
         <DialogTitle
-          sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+          sx={{
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 600,
+            letterSpacing: "-0.5px",
+            fontSize: "1.25rem",
+          }}
         >
           Add New Task
         </DialogTitle>
@@ -333,9 +408,12 @@ const Board: React.FC = () => {
             fullWidth
             value={newTask.title}
             onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+            error={!newTask.title.trim()}
+            helperText={!newTask.title.trim() ? "Title is required" : ""}
             sx={{
-              "& .MuiInputLabel-root": { fontFamily: "'Roboto', sans-serif" },
-              "& .MuiInputBase-root": { fontFamily: "'Roboto', sans-serif" },
+              mb: 2,
+              "& .MuiInputLabel-root": { fontFamily: "'Poppins', sans-serif" },
+              "& .MuiInputBase-root": { fontFamily: "'Poppins', sans-serif" },
             }}
           />
           <TextField
@@ -348,6 +426,15 @@ const Board: React.FC = () => {
             onChange={(e) =>
               setNewTask({ ...newTask, description: e.target.value })
             }
+            error={!newTask.description.trim()}
+            helperText={
+              !newTask.description.trim() ? "Description is required" : ""
+            }
+            sx={{
+              mb: 2,
+              "& .MuiInputLabel-root": { fontFamily: "'Poppins', sans-serif" },
+              "& .MuiInputBase-root": { fontFamily: "'Poppins', sans-serif" },
+            }}
           />
           <TextField
             margin="dense"
@@ -361,6 +448,11 @@ const Board: React.FC = () => {
                 priority: e.target.value as TaskPriority,
               })
             }
+            sx={{
+              mb: 2,
+              "& .MuiInputLabel-root": { fontFamily: "'Poppins', sans-serif" },
+              "& .MuiInputBase-root": { fontFamily: "'Poppins', sans-serif" },
+            }}
           >
             <MenuItem value="LOW">Low</MenuItem>
             <MenuItem value="MEDIUM">Medium</MenuItem>
@@ -375,6 +467,13 @@ const Board: React.FC = () => {
             onChange={(e) =>
               setNewTask({ ...newTask, assignee: e.target.value })
             }
+            error={!newTask.assignee}
+            helperText={!newTask.assignee ? "Assignee is required" : ""}
+            sx={{
+              mb: 2,
+              "& .MuiInputLabel-root": { fontFamily: "'Poppins', sans-serif" },
+              "& .MuiInputBase-root": { fontFamily: "'Poppins', sans-serif" },
+            }}
           >
             {assignees.map((assignee) => (
               <MenuItem key={assignee} value={assignee}>
@@ -392,6 +491,13 @@ const Board: React.FC = () => {
             onChange={(e) =>
               setNewTask({ ...newTask, dueDate: e.target.value })
             }
+            error={!newTask.dueDate}
+            helperText={!newTask.dueDate ? "Due date is required" : ""}
+            sx={{
+              mb: 2,
+              "& .MuiInputLabel-root": { fontFamily: "'Poppins', sans-serif" },
+              "& .MuiInputBase-root": { fontFamily: "'Poppins', sans-serif" },
+            }}
           />
           <TextField
             margin="dense"
@@ -402,7 +508,19 @@ const Board: React.FC = () => {
             onChange={(e) =>
               setNewTask({ ...newTask, estimatedTime: e.target.value })
             }
-            helperText="8 hours = 1 day"
+            error={
+              !newTask.estimatedTime || parseFloat(newTask.estimatedTime) <= 0
+            }
+            helperText={
+              !newTask.estimatedTime || parseFloat(newTask.estimatedTime) <= 0
+                ? "Please enter a valid time"
+                : "8 hours = 1 day"
+            }
+            sx={{
+              mb: 2,
+              "& .MuiInputLabel-root": { fontFamily: "'Poppins', sans-serif" },
+              "& .MuiInputBase-root": { fontFamily: "'Poppins', sans-serif" },
+            }}
           />
           <TextField
             margin="dense"
@@ -410,11 +528,36 @@ const Board: React.FC = () => {
             fullWidth
             value={newTask.tags}
             onChange={(e) => setNewTask({ ...newTask, tags: e.target.value })}
+            sx={{
+              mb: 2,
+              "& .MuiInputLabel-root": { fontFamily: "'Poppins', sans-serif" },
+              "& .MuiInputBase-root": { fontFamily: "'Poppins', sans-serif" },
+            }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleAddTask} variant="contained" color="primary">
+          <Button
+            onClick={() => setOpen(false)}
+            sx={{
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 500,
+              textTransform: "none",
+              fontSize: "0.875rem",
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleAddTask}
+            variant="contained"
+            color="primary"
+            sx={{
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 500,
+              textTransform: "none",
+              fontSize: "0.875rem",
+            }}
+          >
             Add Task
           </Button>
         </DialogActions>

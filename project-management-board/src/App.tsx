@@ -1,6 +1,9 @@
 import React from "react";
+import "./index.css";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import Board from "./components/Board";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const theme = createTheme({
   typography: {
@@ -8,10 +11,10 @@ const theme = createTheme({
   },
   palette: {
     primary: {
-      main: "#1976d2",
+      main: "#2196F3",
     },
     secondary: {
-      main: "#dc004e",
+      main: "#f50057",
     },
     background: {
       default: "#f0f2f5",
@@ -23,7 +26,21 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Board />
+      <div className="App">
+        <Board />
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
+      </div>
     </ThemeProvider>
   );
 }

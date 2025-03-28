@@ -12,6 +12,7 @@ import {
 import { format } from "date-fns";
 import { Task } from "../types";
 import { Draggable } from "react-beautiful-dnd";
+import { formatTime } from "../utils/time";
 
 interface TaskCardProps {
   task: Task;
@@ -23,19 +24,6 @@ const priorityColors = {
   MEDIUM: "warning",
   HIGH: "error",
 } as const;
-
-const formatTime = (minutes: number): string => {
-  const hours = Math.ceil(minutes / 60);
-  if (hours >= 8) {
-    const days = Math.floor(hours / 8);
-    const remainingHours = hours % 8;
-    if (remainingHours === 0) {
-      return `${days}d`;
-    }
-    return `${days}d ${remainingHours}h`;
-  }
-  return `${hours}h`;
-};
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
   const progress = (task.actualTime / task.estimatedTime) * 100;
@@ -64,13 +52,39 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
             }}
           >
             <CardContent>
+              <Box sx={{ display: "flex", gap: 1, mb: 1, flexWrap: "wrap" }}>
+                <Tooltip title={`Priority: ${task.priority}`}>
+                  <Chip
+                    label={task.priority}
+                    color={priorityColors[task.priority]}
+                    size="small"
+                    sx={{
+                      fontFamily: "'Poppins', sans-serif",
+                      fontWeight: 500,
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip title={`Assigned to: ${task.assignee}`}>
+                  <Chip
+                    label={task.assignee}
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      fontFamily: "'Poppins', sans-serif",
+                      fontWeight: 500,
+                    }}
+                  />
+                </Tooltip>
+              </Box>
               <Typography
                 variant="h6"
                 gutterBottom
                 sx={{
-                  fontFamily: "'Inter', sans-serif",
+                  fontFamily: "'Poppins', sans-serif",
                   fontWeight: 600,
                   letterSpacing: "-0.5px",
+                  fontSize: "1rem",
+                  mb: 1,
                 }}
               >
                 {task.title}
@@ -84,49 +98,32 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: "vertical",
                   overflow: "hidden",
-                  fontFamily: "'Roboto', sans-serif",
+                  fontFamily: "'Poppins', sans-serif",
                   fontSize: "0.875rem",
                   lineHeight: 1.5,
                 }}
               >
                 {task.description}
               </Typography>
-              <Box sx={{ display: "flex", gap: 1, mb: 1, flexWrap: "wrap" }}>
-                <Tooltip title={`Priority: ${task.priority}`}>
-                  <Chip
-                    label={task.priority}
-                    color={priorityColors[task.priority]}
-                    size="small"
-                    sx={{
-                      fontFamily: "'Roboto', sans-serif",
-                      fontWeight: 500,
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip title={`Assigned to: ${task.assignee}`}>
-                  <Chip
-                    label={task.assignee}
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      fontFamily: "'Roboto', sans-serif",
-                      fontWeight: 500,
-                    }}
-                  />
-                </Tooltip>
-              </Box>
               <Box sx={{ mb: 1 }}>
                 <LinearProgress
                   variant="determinate"
                   value={Math.min(progress, 100)}
-                  color={progress > 100 ? "error" : "primary"}
-                  sx={{ height: 6, borderRadius: 3 }}
+                  color={progress > 100 ? "error" : "warning"}
+                  sx={{
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: "rgba(255, 167, 38, 0.1)",
+                    "& .MuiLinearProgress-bar": {
+                      backgroundColor: "#ff9800",
+                    },
+                  }}
                 />
                 <Typography
                   variant="caption"
                   color="text.secondary"
                   sx={{
-                    fontFamily: "'Roboto', sans-serif",
+                    fontFamily: "'Poppins', sans-serif",
                     fontSize: "0.75rem",
                     fontWeight: 500,
                   }}
@@ -140,7 +137,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
                 color={isOverdue ? "error" : "text.secondary"}
                 sx={{
                   display: "block",
-                  fontFamily: "'Roboto', sans-serif",
+                  fontFamily: "'Poppins', sans-serif",
                   fontSize: "0.75rem",
                   fontWeight: 500,
                 }}

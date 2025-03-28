@@ -12,6 +12,7 @@ import {
   IconButton,
   Box,
   Typography,
+  Paper,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
@@ -68,15 +69,48 @@ const BoardConfig: React.FC<BoardConfigProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Board Configuration</DialogTitle>
+      <DialogTitle
+        sx={{
+          fontFamily: "'Poppins', sans-serif",
+          fontWeight: 600,
+          letterSpacing: "-0.5px",
+          fontSize: "1.25rem",
+        }}
+      >
+        Board Configuration
+      </DialogTitle>
       <DialogContent>
-        <Box sx={{ mb: 3 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            mb: 3,
+            bgcolor: "background.default",
+            borderRadius: 2,
+          }}
+        >
+          <Typography
+            variant="subtitle2"
+            gutterBottom
+            sx={{
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 600,
+              color: "text.primary",
+              fontSize: "0.875rem",
+            }}
+          >
+            Add New Stage
+          </Typography>
           <TextField
             fullWidth
             label="Stage ID"
             value={newStage.id}
             onChange={(e) => setNewStage({ ...newStage, id: e.target.value })}
-            sx={{ mb: 1 }}
+            sx={{
+              mb: 1,
+              "& .MuiInputLabel-root": { fontFamily: "'Poppins', sans-serif" },
+              "& .MuiInputBase-root": { fontFamily: "'Poppins', sans-serif" },
+            }}
           />
           <TextField
             fullWidth
@@ -85,7 +119,11 @@ const BoardConfig: React.FC<BoardConfigProps> = ({
             onChange={(e) =>
               setNewStage({ ...newStage, title: e.target.value })
             }
-            sx={{ mb: 1 }}
+            sx={{
+              mb: 1,
+              "& .MuiInputLabel-root": { fontFamily: "'Poppins', sans-serif" },
+              "& .MuiInputBase-root": { fontFamily: "'Poppins', sans-serif" },
+            }}
           />
           <Button
             variant="contained"
@@ -95,12 +133,27 @@ const BoardConfig: React.FC<BoardConfigProps> = ({
               !newStage.title ||
               !!columns.find((col) => col.id === newStage.id)
             }
+            sx={{
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: 500,
+              textTransform: "none",
+              fontSize: "0.875rem",
+            }}
           >
             Add Stage
           </Button>
-        </Box>
+        </Paper>
 
-        <Typography variant="subtitle1" gutterBottom>
+        <Typography
+          variant="subtitle1"
+          gutterBottom
+          sx={{
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 600,
+            color: "text.primary",
+            fontSize: "1rem",
+          }}
+        >
           Current Stages
         </Typography>
         <DragDropContext onDragEnd={handleDragEnd}>
@@ -118,12 +171,22 @@ const BoardConfig: React.FC<BoardConfigProps> = ({
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
+                        sx={{
+                          bgcolor: "background.default",
+                          borderRadius: 1,
+                          mb: 1,
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            bgcolor: "action.hover",
+                          },
+                        }}
                         secondaryAction={
                           <IconButton
                             edge="end"
                             aria-label="delete"
                             onClick={() => handleRemoveStage(column.id)}
                             disabled={column.tasks.length > 0}
+                            size="small"
                           >
                             <DeleteIcon />
                           </IconButton>
@@ -132,6 +195,18 @@ const BoardConfig: React.FC<BoardConfigProps> = ({
                         <ListItemText
                           primary={column.title}
                           secondary={`${column.tasks.length} tasks`}
+                          sx={{
+                            "& .MuiListItemText-primary": {
+                              fontFamily: "'Poppins', sans-serif",
+                              fontWeight: 500,
+                              fontSize: "0.875rem",
+                            },
+                            "& .MuiListItemText-secondary": {
+                              fontFamily: "'Poppins', sans-serif",
+                              color: "text.secondary",
+                              fontSize: "0.75rem",
+                            },
+                          }}
                         />
                       </ListItem>
                     )}
@@ -144,7 +219,17 @@ const BoardConfig: React.FC<BoardConfigProps> = ({
         </DragDropContext>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button
+          onClick={onClose}
+          sx={{
+            fontFamily: "'Poppins', sans-serif",
+            fontWeight: 500,
+            textTransform: "none",
+            fontSize: "0.875rem",
+          }}
+        >
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );

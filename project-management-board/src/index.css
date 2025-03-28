@@ -1,13 +1,34 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+    "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Apply Poppins to all MUI components by default */
+.MuiTypography-root,
+.MuiButton-root,
+.MuiTextField-root,
+.MuiInputBase-root,
+.MuiInputLabel-root,
+.MuiSelect-root,
+.MuiMenuItem-root,
+.MuiChip-root,
+.MuiListItemText-root,
+.MuiDialogTitle-root,
+.MuiDialogContent-root,
+.MuiDialogActions-root {
+  font-family: "Poppins", sans-serif !important;
 }

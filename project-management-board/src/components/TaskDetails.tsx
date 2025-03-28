@@ -11,11 +11,22 @@ import {
   IconButton,
   Chip,
   LinearProgress,
+  Stack,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
 } from "@mui/material";
 import { format } from "date-fns";
 import { Task, WorkLog } from "../types";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import PersonIcon from "@mui/icons-material/Person";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { v4 as uuidv4 } from "uuid";
+import { formatTime } from "../utils/time";
 
 interface TaskDetailsProps {
   task: Task | null;
@@ -61,8 +72,13 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({
     <Dialog
       open={!!task}
       onClose={onClose}
+      maxWidth="md"
+      fullWidth
       PaperProps={{
-        sx: { width: { xs: "100%", sm: 400 } },
+        sx: {
+          borderRadius: 2,
+          boxShadow: 3,
+        },
       }}
     >
       <Box sx={{ p: 3, height: "100%", overflow: "auto" }}>
@@ -74,8 +90,17 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({
             mb: 3,
           }}
         >
-          <Typography variant="h5">{task.title}</Typography>
-          <IconButton onClick={onClose}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              letterSpacing: "-0.5px",
+            }}
+          >
+            {task.title}
+          </Typography>
+          <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>
         </Box>
@@ -91,74 +116,196 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({
                 : "success"
             }
             size="small"
+            sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 500 }}
           />
-          <Chip label={task.status} variant="outlined" size="small" />
+          <Chip
+            label={task.status}
+            variant="outlined"
+            size="small"
+            sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 500 }}
+          />
         </Stack>
 
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle2" gutterBottom>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            mb: 3,
+            bgcolor: "background.default",
+            borderRadius: 2,
+          }}
+        >
+          <Typography
+            variant="subtitle2"
+            gutterBottom
+            sx={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              color: "text.primary",
+            }}
+          >
             Time Progress
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
             <Box sx={{ flexGrow: 1 }}>
               <LinearProgress
                 variant="determinate"
-                value={Math.min(progress, 100)}
-                color={progress > 100 ? "error" : "primary"}
-                sx={{ height: 8, borderRadius: 4 }}
+                value={Math.min(
+                  (task.actualTime / task.estimatedTime) * 100,
+                  100
+                )}
+                color={
+                  task.actualTime > task.estimatedTime ? "error" : "warning"
+                }
+                sx={{
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: "rgba(255, 167, 38, 0.1)",
+                  "& .MuiLinearProgress-bar": {
+                    backgroundColor: "#ff9800",
+                  },
+                }}
               />
             </Box>
-            <Typography variant="caption" color="text.secondary">
-              {task.actualTime}/{task.estimatedTime} min
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                display: "block",
+                mt: 1,
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: "0.75rem",
+                fontWeight: 500,
+              }}
+            >
+              {formatTime(task.actualTime)} / {formatTime(task.estimatedTime)}
             </Typography>
           </Box>
-        </Box>
+        </Paper>
 
         <Divider sx={{ my: 2 }} />
 
-        <Typography variant="subtitle1" gutterBottom>
+        <Typography
+          variant="subtitle1"
+          gutterBottom
+          sx={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 600,
+            color: "text.primary",
+          }}
+        >
           Description
         </Typography>
-        <Typography variant="body2" color="text.secondary" paragraph>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          paragraph
+          sx={{ fontFamily: "'Roboto', sans-serif" }}
+        >
           {task.description}
         </Typography>
 
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" gutterBottom>
+          <Typography
+            variant="subtitle2"
+            gutterBottom
+            sx={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              color: "text.primary",
+            }}
+          >
             Details
           </Typography>
-          <Typography variant="body2">Assignee: {task.assignee}</Typography>
-          <Typography variant="body2">
-            Due Date: {format(task.dueDate, "MMM dd, yyyy")}
-          </Typography>
+          <Stack spacing={1}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <PersonIcon fontSize="small" color="action" />
+              <Typography
+                variant="body2"
+                sx={{ fontFamily: "'Roboto', sans-serif" }}
+              >
+                {task.assignee}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <CalendarTodayIcon fontSize="small" color="action" />
+              <Typography
+                variant="body2"
+                sx={{ fontFamily: "'Roboto', sans-serif" }}
+              >
+                Due: {format(task.dueDate, "MMM dd, yyyy")}
+              </Typography>
+            </Box>
+          </Stack>
         </Box>
 
         <Divider sx={{ my: 2 }} />
 
-        <Typography variant="subtitle1" gutterBottom>
+        <Typography
+          variant="subtitle1"
+          gutterBottom
+          sx={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 600,
+            color: "text.primary",
+          }}
+        >
           Work Logs
         </Typography>
         <List>
           {task.workLogs.map((log) => (
             <ListItem
               key={log.id}
+              sx={{
+                bgcolor: "background.default",
+                borderRadius: 1,
+                mb: 1,
+              }}
               secondaryAction={
-                <IconButton edge="end" aria-label="delete">
+                <IconButton edge="end" aria-label="delete" size="small">
                   <DeleteIcon />
                 </IconButton>
               }
             >
               <ListItemText
                 primary={log.description}
-                secondary={`${format(log.timestamp, "MMM dd, yyyy HH:mm")} - ${
-                  log.timeSpent
-                } minutes`}
+                secondary={
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <AccessTimeIcon fontSize="small" color="action" />
+                    <Typography
+                      variant="caption"
+                      sx={{ fontFamily: "'Roboto', sans-serif" }}
+                    >
+                      {format(log.timestamp, "MMM dd, yyyy HH:mm")} -{" "}
+                      {log.timeSpent} minutes
+                    </Typography>
+                  </Box>
+                }
               />
             </ListItem>
           ))}
         </List>
 
-        <Box sx={{ mt: 2 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            mt: 2,
+            bgcolor: "background.default",
+            borderRadius: 2,
+          }}
+        >
+          <Typography
+            variant="subtitle2"
+            gutterBottom
+            sx={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              color: "text.primary",
+            }}
+          >
+            Add Work Log
+          </Typography>
           <TextField
             fullWidth
             label="Work Log Description"
@@ -184,10 +331,15 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({
             variant="contained"
             onClick={handleAddWorkLog}
             disabled={!newWorkLog.description || !newWorkLog.timeSpent}
+            sx={{
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 500,
+              textTransform: "none",
+            }}
           >
             Add Work Log
           </Button>
-        </Box>
+        </Paper>
       </Box>
     </Dialog>
   );
