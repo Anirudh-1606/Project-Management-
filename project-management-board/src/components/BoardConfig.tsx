@@ -157,13 +157,13 @@ const BoardConfig: React.FC<BoardConfigProps> = ({
           Current Stages
         </Typography>
         <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="stages">
+          <Droppable droppableId="board-stages">
             {(provided) => (
               <List {...provided.droppableProps} ref={provided.innerRef}>
                 {columns.map((column, index) => (
                   <Draggable
                     key={column.id}
-                    draggableId={column.id}
+                    draggableId={`stage-${column.id}`}
                     index={index}
                   >
                     {(provided) => (

@@ -1,8 +1,8 @@
 import React from "react";
 import { Box, Typography, Paper, Chip, Fade } from "@mui/material";
-import { Droppable } from "react-beautiful-dnd";
 import { Column as ColumnType, Task } from "../types";
 import TaskCard from "./TaskCard";
+import { StrictModeDroppable } from "./StrictModeDroppable";
 
 interface ColumnProps {
   column: ColumnType;
@@ -39,7 +39,7 @@ const Column: React.FC<ColumnProps> = ({ column, onTaskClick }) => {
             sx={{ minWidth: 30 }}
           />
         </Box>
-        <Droppable droppableId={column.id} type="TASK">
+        <StrictModeDroppable droppableId={column.id} type="TASK">
           {(provided, snapshot) => (
             <Box
               ref={provided.innerRef}
@@ -59,13 +59,13 @@ const Column: React.FC<ColumnProps> = ({ column, onTaskClick }) => {
                   key={task.id}
                   task={task}
                   index={index}
-                  onClick={onTaskClick}
+                  onTaskClick={onTaskClick}
                 />
               ))}
               {provided.placeholder}
             </Box>
           )}
-        </Droppable>
+        </StrictModeDroppable>
       </Paper>
     </Fade>
   );

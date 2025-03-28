@@ -61,6 +61,120 @@ const defaultColumns: ColumnType[] = [
   },
 ];
 
+const mockAssignees = [
+  "John Smith",
+  "Sarah Johnson",
+  "Michael Chen",
+  "Emily Davis",
+  "David Wilson",
+  "Lisa Anderson",
+];
+
+const mockTasks: Task[] = [
+  {
+    id: "task-1",
+    title: "Design User Interface",
+    description: "Create wireframes and mockups for the new dashboard layout",
+    status: "TODO",
+    priority: "HIGH",
+    assignee: "John Smith",
+    dueDate: new Date(2024, 3, 15),
+    createdAt: new Date(2024, 3, 1),
+    workLogs: [],
+    estimatedTime: 480, // 8 hours
+    actualTime: 0,
+    tags: ["design", "ui", "wireframe"],
+    attachments: [],
+    dependencies: [],
+    comments: [],
+  },
+  {
+    id: "task-2",
+    title: "Implement Authentication",
+    description: "Set up user authentication and authorization system",
+    status: "IN_PROGRESS",
+    priority: "HIGH",
+    assignee: "Sarah Johnson",
+    dueDate: new Date(2024, 3, 20),
+    createdAt: new Date(2024, 3, 1),
+    workLogs: [],
+    estimatedTime: 960, // 16 hours
+    actualTime: 240, // 4 hours
+    tags: ["auth", "security", "backend"],
+    attachments: [],
+    dependencies: [],
+    comments: [],
+  },
+  {
+    id: "task-3",
+    title: "Database Optimization",
+    description: "Optimize database queries and indexes for better performance",
+    status: "BLOCKED",
+    priority: "MEDIUM",
+    assignee: "Michael Chen",
+    dueDate: new Date(2024, 3, 25),
+    createdAt: new Date(2024, 3, 1),
+    workLogs: [],
+    estimatedTime: 720, // 12 hours
+    actualTime: 0,
+    tags: ["database", "performance"],
+    attachments: [],
+    dependencies: ["task-2"],
+    comments: [],
+  },
+  {
+    id: "task-4",
+    title: "Write Unit Tests",
+    description: "Create comprehensive unit tests for core functionality",
+    status: "DONE",
+    priority: "MEDIUM",
+    assignee: "Emily Davis",
+    dueDate: new Date(2024, 3, 10),
+    createdAt: new Date(2024, 2, 25),
+    workLogs: [],
+    estimatedTime: 600, // 10 hours
+    actualTime: 720, // 12 hours
+    tags: ["testing", "unit-tests"],
+    attachments: [],
+    dependencies: [],
+    comments: [],
+  },
+  {
+    id: "task-5",
+    title: "API Documentation",
+    description: "Document all API endpoints and create usage examples",
+    status: "TODO",
+    priority: "LOW",
+    assignee: "David Wilson",
+    dueDate: new Date(2024, 3, 30),
+    createdAt: new Date(2024, 3, 1),
+    workLogs: [],
+    estimatedTime: 480, // 8 hours
+    actualTime: 0,
+    tags: ["documentation", "api"],
+    attachments: [],
+    dependencies: ["task-2"],
+    comments: [],
+  },
+  {
+    id: "task-6",
+    title: "Mobile Responsiveness",
+    description: "Ensure the application is fully responsive on mobile devices",
+    status: "IN_PROGRESS",
+    priority: "HIGH",
+    assignee: "Lisa Anderson",
+    dueDate: new Date(2024, 3, 18),
+    createdAt: new Date(2024, 3, 1),
+    workLogs: [],
+    estimatedTime: 720, // 12 hours
+    actualTime: 360, // 6 hours
+    tags: ["mobile", "responsive", "ui"],
+    attachments: [],
+    dependencies: ["task-1"],
+    comments: [],
+  },
+];
+
 const Board: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [columns, setColumns] = useState<ColumnType[]>(defaultColumns);
@@ -68,7 +182,7 @@ const Board: React.FC = () => {
   const [configOpen, setConfigOpen] = useState(false);
   const [userManagementOpen, setUserManagementOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [assignees, setAssignees] = useState<string[]>([]);
+  const [assignees, setAssignees] = useState<string[]>(mockAssignees);
   const [selectedAssignee, setSelectedAssignee] = useState<string>("");
   const [newTask, setNewTask] = useState({
     title: "",
@@ -92,6 +206,12 @@ const Board: React.FC = () => {
   useEffect(() => {
     // Simulate loading data
     const timer = setTimeout(() => {
+      // Initialize columns with mock tasks
+      const initializedColumns = columns.map((column) => ({
+        ...column,
+        tasks: mockTasks.filter((task) => task.status === column.id),
+      }));
+      setColumns(initializedColumns);
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
@@ -179,6 +299,7 @@ const Board: React.FC = () => {
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
+    // Handle task movement
     const { source, destination } = result;
     const sourceColumn = columns.find((col) => col.id === source.droppableId);
     const destColumn = columns.find(
@@ -689,6 +810,134 @@ const Board: React.FC = () => {
               <IconButton onClick={handleFilterClick}>
                 <FilterListIcon />
               </IconButton>
+              <Popover
+                open={Boolean(filterAnchorEl)}
+                anchorEl={filterAnchorEl}
+                onClose={handleFilterClose}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+                PaperProps={{
+                  sx: {
+                    mt: 1,
+                    p: 2,
+                    minWidth: 300,
+                    borderRadius: 2,
+                    boxShadow: 3,
+                  },
+                }}
+              >
+                <Box sx={{ mb: 2 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      fontFamily: "'Poppins', sans-serif",
+                      fontWeight: 600,
+                      color: "text.primary",
+                      fontSize: "0.875rem",
+                      mb: 1,
+                    }}
+                  >
+                    Advanced Filters
+                  </Typography>
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <InputLabel>Priority</InputLabel>
+                    <Select
+                      value={selectedPriority}
+                      label="Priority"
+                      onChange={(e) =>
+                        setSelectedPriority(e.target.value as TaskPriority | "")
+                      }
+                      sx={{
+                        height: 40,
+                        fontFamily: "'Poppins', sans-serif",
+                      }}
+                    >
+                      <MenuItem value="">All</MenuItem>
+                      <MenuItem value="HIGH">High</MenuItem>
+                      <MenuItem value="MEDIUM">Medium</MenuItem>
+                      <MenuItem value="LOW">Low</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <Stack spacing={2}>
+                    <TextField
+                      label="Start Date"
+                      type="date"
+                      value={
+                        startDate ? startDate.toISOString().split("T")[0] : ""
+                      }
+                      onChange={(e) =>
+                        setStartDate(
+                          e.target.value ? new Date(e.target.value) : null
+                        )
+                      }
+                      InputLabelProps={{ shrink: true }}
+                      fullWidth
+                      sx={{
+                        "& .MuiInputLabel-root": {
+                          fontFamily: "'Poppins', sans-serif",
+                        },
+                        "& .MuiInputBase-root": {
+                          fontFamily: "'Poppins', sans-serif",
+                        },
+                      }}
+                    />
+                    <TextField
+                      label="End Date"
+                      type="date"
+                      value={endDate ? endDate.toISOString().split("T")[0] : ""}
+                      onChange={(e) =>
+                        setEndDate(
+                          e.target.value ? new Date(e.target.value) : null
+                        )
+                      }
+                      InputLabelProps={{ shrink: true }}
+                      fullWidth
+                      sx={{
+                        "& .MuiInputLabel-root": {
+                          fontFamily: "'Poppins', sans-serif",
+                        },
+                        "& .MuiInputBase-root": {
+                          fontFamily: "'Poppins', sans-serif",
+                        },
+                      }}
+                    />
+                  </Stack>
+                </Box>
+                <Box
+                  sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
+                >
+                  <Button
+                    onClick={clearFilters}
+                    sx={{
+                      fontFamily: "'Poppins', sans-serif",
+                      fontWeight: 500,
+                      textTransform: "none",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    Clear
+                  </Button>
+                  <Button
+                    onClick={handleFilterClose}
+                    variant="contained"
+                    color="primary"
+                    sx={{
+                      fontFamily: "'Poppins', sans-serif",
+                      fontWeight: 500,
+                      textTransform: "none",
+                      fontSize: "0.875rem",
+                    }}
+                  >
+                    Apply
+                  </Button>
+                </Box>
+              </Popover>
               <IconButton onClick={() => setStatsOpen(true)}>
                 <BarChartIcon />
               </IconButton>
