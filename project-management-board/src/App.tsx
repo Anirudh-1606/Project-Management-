@@ -1,23 +1,38 @@
 import React from "react";
-import "./index.css";
-import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
-import Board from "./components/Board";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Board from "./components/Board";
 
 const theme = createTheme({
-  typography: {
-    fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
-  },
   palette: {
+    mode: "light",
     primary: {
       main: "#2196F3",
     },
     secondary: {
       main: "#f50057",
     },
-    background: {
-      default: "#f0f2f5",
+  },
+  typography: {
+    fontFamily: "'Poppins', sans-serif",
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: "none",
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+        },
+      },
     },
   },
 });
