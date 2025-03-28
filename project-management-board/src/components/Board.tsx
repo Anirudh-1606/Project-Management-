@@ -25,6 +25,7 @@ import Column from "./Column";
 import TaskDetails from "./TaskDetails";
 import BoardConfig from "./BoardConfig";
 import UserManagement from "./UserManagement";
+import EmptyState from "./EmptyState";
 
 const defaultColumns: ColumnType[] = [
   {
@@ -177,76 +178,91 @@ const Board: React.FC = () => {
       : column.tasks,
   }));
 
-  const renderBoardContent = () => (
-    <Fade in={!loading} timeout={500}>
-      <Box>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-          <Typography
-            variant="h4"
-            sx={{
-              fontFamily: "'Inter', sans-serif",
-              fontWeight: 700,
-              letterSpacing: "-1px",
-            }}
-          >
-            Project Management Board
-          </Typography>
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel sx={{ fontFamily: "'Roboto', sans-serif" }}>
-                Filter by Assignee
-              </InputLabel>
-              <Select
-                value={selectedAssignee}
-                label="Filter by Assignee"
-                onChange={(e) => setSelectedAssignee(e.target.value)}
-                sx={{
-                  height: 40,
-                  fontFamily: "'Roboto', sans-serif",
-                }}
-              >
-                <MenuItem value="">All</MenuItem>
-                {assignees.map((assignee) => (
-                  <MenuItem key={assignee} value={assignee}>
-                    {assignee}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <IconButton onClick={() => setUserManagementOpen(true)}>
-              <GroupIcon />
-            </IconButton>
-            <IconButton onClick={() => setConfigOpen(true)}>
-              <SettingsIcon />
-            </IconButton>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setOpen(true)}
+  const renderBoardContent = () => {
+    const hasTasks = columns.some((column) => column.tasks.length > 0);
+    const hasUsers = assignees.length > 0;
+
+    return (
+      <Fade in={!loading} timeout={500}>
+        <Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+            <Typography
+              variant="h4"
               sx={{
-                fontFamily: "'Roboto', sans-serif",
-                fontWeight: 500,
-                textTransform: "none",
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: 700,
+                letterSpacing: "-1px",
               }}
             >
-              Add Task
-            </Button>
+              Project Management Board
+            </Typography>
+            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+              <FormControl sx={{ minWidth: 200 }}>
+                <InputLabel sx={{ fontFamily: "'Roboto', sans-serif" }}>
+                  Filter by Assignee
+                </InputLabel>
+                <Select
+                  value={selectedAssignee}
+                  label="Filter by Assignee"
+                  onChange={(e) => setSelectedAssignee(e.target.value)}
+                  sx={{
+                    height: 40,
+                    fontFamily: "'Roboto', sans-serif",
+                  }}
+                >
+                  <MenuItem value="">All</MenuItem>
+                  {assignees.map((assignee) => (
+                    <MenuItem key={assignee} value={assignee}>
+                      {assignee}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <IconButton onClick={() => setUserManagementOpen(true)}>
+                <GroupIcon />
+              </IconButton>
+              <IconButton onClick={() => setConfigOpen(true)}>
+                <SettingsIcon />
+              </IconButton>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setOpen(true)}
+                sx={{
+                  fontFamily: "'Roboto', sans-serif",
+                  fontWeight: 500,
+                  textTransform: "none",
+                }}
+              >
+                Add Task
+              </Button>
+            </Box>
           </Box>
+
+          {!hasUsers ? (
+            <EmptyState
+              type="users"
+              onAction={() => setUserManagementOpen(true)}
+            />
+          ) : !hasTasks ? (
+            <EmptyState type="tasks" onAction={() => setOpen(true)} />
+          ) : (
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Box sx={{ display: "flex", gap: 2, overflowX: "auto", pb: 2 }}>
+                {filteredColumns.map((column) => (
+                  <Column
+                    key={column.id}
+                    column={column}
+                    onTaskClick={setSelectedTask}
+                  />
+                ))}
+              </Box>
+            </DragDropContext>
+          )}
         </Box>
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Box sx={{ display: "flex", gap: 2, overflowX: "auto", pb: 2 }}>
-            {filteredColumns.map((column) => (
-              <Column
-                key={column.id}
-                column={column}
-                onTaskClick={setSelectedTask}
-              />
-            ))}
-          </Box>
-        </DragDropContext>
-      </Box>
-    </Fade>
-  );
+      </Fade>
+    );
+  };
 
   const renderLoadingState = () => (
     <Box>

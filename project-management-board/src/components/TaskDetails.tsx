@@ -2,17 +2,14 @@ import React, { useState } from "react";
 import {
   Box,
   Typography,
-  Paper,
-  Chip,
-  Divider,
-  TextField,
   Button,
-  List,
-  ListItem,
-  ListItemText,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   IconButton,
-  Stack,
-  Drawer,
+  Chip,
   LinearProgress,
 } from "@mui/material";
 import { format } from "date-fns";
@@ -61,8 +58,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({
   const progress = (task.actualTime / task.estimatedTime) * 100;
 
   return (
-    <Drawer
-      anchor="right"
+    <Dialog
       open={!!task}
       onClose={onClose}
       PaperProps={{
@@ -193,7 +189,7 @@ const TaskDetails: React.FC<TaskDetailsProps> = ({
           </Button>
         </Box>
       </Box>
-    </Drawer>
+    </Dialog>
   );
 };
 

@@ -43,28 +43,38 @@ const UserManagement: React.FC<UserManagementProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>User Management</DialogTitle>
+      <DialogTitle sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+        Team Members
+      </DialogTitle>
       <DialogContent>
         <Box sx={{ mb: 3 }}>
           <TextField
             fullWidth
-            label="Add User"
+            label="New Team Member"
             value={newAssignee}
             onChange={(e) => setNewAssignee(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAddAssignee()}
             sx={{ mb: 1 }}
           />
           <Button
             variant="contained"
             onClick={handleAddAssignee}
             disabled={!newAssignee || assignees.includes(newAssignee)}
+            sx={{
+              fontFamily: "'Roboto', sans-serif",
+              fontWeight: 500,
+              textTransform: "none",
+            }}
           >
-            Add User
+            Add Team Member
           </Button>
         </Box>
 
-        <Typography variant="subtitle1" gutterBottom>
-          Current Users
+        <Typography
+          variant="subtitle1"
+          gutterBottom
+          sx={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
+        >
+          Current Team Members
         </Typography>
         <List>
           {assignees.map((assignee) => (
@@ -80,7 +90,10 @@ const UserManagement: React.FC<UserManagementProps> = ({
                 </IconButton>
               }
             >
-              <ListItemText primary={assignee} />
+              <ListItemText
+                primary={assignee}
+                sx={{ fontFamily: "'Roboto', sans-serif" }}
+              />
             </ListItem>
           ))}
         </List>
