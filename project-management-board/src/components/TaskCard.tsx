@@ -46,6 +46,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, onTaskClick }) => {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           elevation={snapshot.isDragging ? 3 : 1}
+          className="task-card"
           sx={{
             p: 2,
             mb: 2,

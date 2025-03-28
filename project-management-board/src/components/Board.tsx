@@ -37,6 +37,7 @@ import EmptyState from "./EmptyState";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import SearchIcon from "@mui/icons-material/Search";
 import BarChartIcon from "@mui/icons-material/BarChart";
+import AppWalkthrough from "./AppWalkthrough";
 
 const defaultColumns: ColumnType[] = [
   {
@@ -202,6 +203,7 @@ const Board: React.FC = () => {
     useState<HTMLButtonElement | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statsOpen, setStatsOpen] = useState(false);
+  const [walkthroughOpen, setWalkthroughOpen] = useState(true);
 
   useEffect(() => {
     // Simulate loading data
@@ -733,7 +735,7 @@ const Board: React.FC = () => {
                   opacity: 0.9,
                 }}
               />
-              <Box>
+              <Box className="board-title">
                 <Typography
                   variant="h5"
                   sx={{
@@ -765,6 +767,7 @@ const Board: React.FC = () => {
             <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
               <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
                 <TextField
+                  className="search-field"
                   placeholder="Search tasks..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -785,7 +788,7 @@ const Board: React.FC = () => {
                     ),
                   }}
                 />
-                <FormControl sx={{ minWidth: 200 }}>
+                <FormControl className="assignee-filter" sx={{ minWidth: 200 }}>
                   <InputLabel sx={{ fontFamily: "'Roboto', sans-serif" }}>
                     Filter by Assignee
                   </InputLabel>
@@ -807,147 +810,29 @@ const Board: React.FC = () => {
                   </Select>
                 </FormControl>
               </Box>
-              <IconButton onClick={handleFilterClick}>
+              <IconButton className="filter-button" onClick={handleFilterClick}>
                 <FilterListIcon />
               </IconButton>
-              <Popover
-                open={Boolean(filterAnchorEl)}
-                anchorEl={filterAnchorEl}
-                onClose={handleFilterClose}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "right",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "right",
-                }}
-                PaperProps={{
-                  sx: {
-                    mt: 1,
-                    p: 2,
-                    minWidth: 300,
-                    borderRadius: 2,
-                    boxShadow: 3,
-                  },
-                }}
+              <IconButton
+                className="stats-button"
+                onClick={() => setStatsOpen(true)}
               >
-                <Box sx={{ mb: 2 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{
-                      fontFamily: "'Poppins', sans-serif",
-                      fontWeight: 600,
-                      color: "text.primary",
-                      fontSize: "0.875rem",
-                      mb: 1,
-                    }}
-                  >
-                    Advanced Filters
-                  </Typography>
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel>Priority</InputLabel>
-                    <Select
-                      value={selectedPriority}
-                      label="Priority"
-                      onChange={(e) =>
-                        setSelectedPriority(e.target.value as TaskPriority | "")
-                      }
-                      sx={{
-                        height: 40,
-                        fontFamily: "'Poppins', sans-serif",
-                      }}
-                    >
-                      <MenuItem value="">All</MenuItem>
-                      <MenuItem value="HIGH">High</MenuItem>
-                      <MenuItem value="MEDIUM">Medium</MenuItem>
-                      <MenuItem value="LOW">Low</MenuItem>
-                    </Select>
-                  </FormControl>
-                  <Stack spacing={2}>
-                    <TextField
-                      label="Start Date"
-                      type="date"
-                      value={
-                        startDate ? startDate.toISOString().split("T")[0] : ""
-                      }
-                      onChange={(e) =>
-                        setStartDate(
-                          e.target.value ? new Date(e.target.value) : null
-                        )
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      fullWidth
-                      sx={{
-                        "& .MuiInputLabel-root": {
-                          fontFamily: "'Poppins', sans-serif",
-                        },
-                        "& .MuiInputBase-root": {
-                          fontFamily: "'Poppins', sans-serif",
-                        },
-                      }}
-                    />
-                    <TextField
-                      label="End Date"
-                      type="date"
-                      value={endDate ? endDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) =>
-                        setEndDate(
-                          e.target.value ? new Date(e.target.value) : null
-                        )
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      fullWidth
-                      sx={{
-                        "& .MuiInputLabel-root": {
-                          fontFamily: "'Poppins', sans-serif",
-                        },
-                        "& .MuiInputBase-root": {
-                          fontFamily: "'Poppins', sans-serif",
-                        },
-                      }}
-                    />
-                  </Stack>
-                </Box>
-                <Box
-                  sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
-                >
-                  <Button
-                    onClick={clearFilters}
-                    sx={{
-                      fontFamily: "'Poppins', sans-serif",
-                      fontWeight: 500,
-                      textTransform: "none",
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    Clear
-                  </Button>
-                  <Button
-                    onClick={handleFilterClose}
-                    variant="contained"
-                    color="primary"
-                    sx={{
-                      fontFamily: "'Poppins', sans-serif",
-                      fontWeight: 500,
-                      textTransform: "none",
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    Apply
-                  </Button>
-                </Box>
-              </Popover>
-              <IconButton onClick={() => setStatsOpen(true)}>
                 <BarChartIcon />
               </IconButton>
-              <IconButton onClick={() => setUserManagementOpen(true)}>
+              <IconButton
+                className="user-management"
+                onClick={() => setUserManagementOpen(true)}
+              >
                 <GroupIcon />
               </IconButton>
-              <IconButton onClick={() => setConfigOpen(true)}>
+              <IconButton
+                className="board-config"
+                onClick={() => setConfigOpen(true)}
+              >
                 <SettingsIcon />
               </IconButton>
               <Button
+                className="add-task-button"
                 variant="contained"
                 color="primary"
                 onClick={() => setOpen(true)}
@@ -1044,6 +929,11 @@ const Board: React.FC = () => {
         onClose={() => setUserManagementOpen(false)}
         assignees={assignees}
         onUpdateAssignees={setAssignees}
+      />
+
+      <AppWalkthrough
+        isOpen={walkthroughOpen}
+        onClose={() => setWalkthroughOpen(false)}
       />
 
       <Dialog
