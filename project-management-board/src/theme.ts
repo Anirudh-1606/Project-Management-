@@ -100,22 +100,22 @@ export const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
+          borderRadius: 12,
           boxShadow:
-            "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
-          backgroundImage: "none",
+            "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
         },
       },
     },
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 6,
+          borderRadius: 8,
+          textTransform: "none",
+          fontWeight: 500,
           padding: "8px 16px",
-        },
-        contained: {
-          boxShadow: "none",
           "&:hover": {
-            boxShadow: "none",
+            boxShadow:
+              "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
           },
         },
       },
@@ -123,7 +123,7 @@ export const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: 4,
+          borderRadius: 6,
           height: 24,
           "& .MuiChip-label": {
             padding: "0 8px",
@@ -136,11 +136,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           "& .MuiOutlinedInput-root": {
-            borderRadius: 6,
-            backgroundColor: "#ffffff",
-            "&:hover": {
-              backgroundColor: "#f8fafc",
-            },
+            borderRadius: 8,
           },
         },
       },
@@ -149,15 +145,16 @@ export const theme = createTheme({
       styleOverrides: {
         paper: {
           borderRadius: 12,
-          background: "#ffffff",
+          padding: 24,
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          background: "#ffffff",
+          borderRadius: 12,
+          boxShadow:
+            "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
         },
       },
     },
@@ -188,14 +185,49 @@ export const theme = createTheme({
         },
       },
     },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          padding: 8,
+          "&:hover": {
+            backgroundColor: "rgba(0, 0, 0, 0.04)",
+          },
+        },
+      },
+    },
+    MuiAvatar: {
+      styleOverrides: {
+        root: {
+          width: 40,
+          height: 40,
+          fontSize: "1rem",
+        },
+      },
+    },
+    MuiBadge: {
+      styleOverrides: {
+        badge: {
+          backgroundColor: "#10b981",
+          color: "white",
+          "&.MuiBadge-badge": {
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            border: "2px solid white",
+          },
+        },
+      },
+    },
     MuiLinearProgress: {
       styleOverrides: {
         root: {
+          height: 6,
+          borderRadius: 3,
           backgroundColor: "#e2e8f0",
-          borderRadius: 4,
         },
         bar: {
-          borderRadius: 4,
+          borderRadius: 3,
         },
       },
     },

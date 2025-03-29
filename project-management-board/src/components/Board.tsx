@@ -38,6 +38,8 @@ import FilterListIcon from "@mui/icons-material/FilterList";
 import SearchIcon from "@mui/icons-material/Search";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import AppWalkthrough from "./AppWalkthrough";
+import { useNavigate } from "react-router-dom";
+import GroupsIcon from "@mui/icons-material/Groups";
 
 const defaultColumns: ColumnType[] = [
   {
@@ -176,7 +178,15 @@ const mockTasks: Task[] = [
   },
 ];
 
-const Board: React.FC = () => {
+interface BoardProps {
+  onTasksUpdate: (tasks: Task[]) => void;
+  onTeamMembersUpdate: (members: string[]) => void;
+}
+
+const Board: React.FC<BoardProps> = ({
+  onTasksUpdate,
+  onTeamMembersUpdate,
+}) => {
   const [loading, setLoading] = useState(true);
   const [columns, setColumns] = useState<ColumnType[]>(defaultColumns);
   const [open, setOpen] = useState(false);
@@ -204,6 +214,7 @@ const Board: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statsOpen, setStatsOpen] = useState(false);
   const [walkthroughOpen, setWalkthroughOpen] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Simulate loading data
@@ -214,10 +225,13 @@ const Board: React.FC = () => {
         tasks: mockTasks.filter((task) => task.status === column.id),
       }));
       setColumns(initializedColumns);
+      // Update parent component with all tasks and team members
+      onTasksUpdate(mockTasks);
+      onTeamMembersUpdate(mockAssignees);
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [onTasksUpdate, onTeamMembersUpdate]);
 
   const validateTaskForm = () => {
     if (!newTask.title.trim()) {
@@ -355,6 +369,9 @@ const Board: React.FC = () => {
         ),
       }))
     );
+    // Update parent component with the updated task
+    const allTasks = getAllTasks();
+    onTasksUpdate(allTasks);
     toast.success("Task updated successfully");
   };
 
@@ -831,6 +848,19 @@ const Board: React.FC = () => {
               >
                 <SettingsIcon />
               </IconButton>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate("/standup")}
+                startIcon={<GroupsIcon />}
+                sx={{
+                  fontFamily: "'Roboto', sans-serif",
+                  fontWeight: 500,
+                  textTransform: "none",
+                }}
+              >
+                Start Standup
+              </Button>
               <Button
                 className="add-task-button"
                 variant="contained"
